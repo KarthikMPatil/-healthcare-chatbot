@@ -27,12 +27,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify({ message }),
+                body: JSON.stringify({ message })
             });
 
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                console.error('Non-JSON response:', await response.text());
+                throw new Error('Invalid response format from server');
+            }
+
             const data = await response.json();
-            
+            console.log('Response data:', data);
+
             if (!response.ok) {
                 console.error('API Error:', data);
                 throw new Error(data.details || data.error || 'Failed to get response');
@@ -49,9 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
             isWaitingForResponse = false;
             messageInput.focus();
         }
-
-        // Scroll to bottom
-        scrollToBottom();
     });
 
     function addUserMessage(message) {
