@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const typingIndicator = showTypingIndicator();
 
         try {
+            console.log('Sending request to chat function...');
             const response = await fetch('/.netlify/functions/chat', {
                 method: 'POST',
                 headers: {
@@ -30,21 +31,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ message }),
             });
 
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
             const data = await response.json();
             
+            if (!response.ok) {
+                console.error('API Error:', data);
+                throw new Error(data.details || data.error || 'Failed to get response');
+            }
+
             // Remove typing indicator and add bot message
             typingIndicator.remove();
             addBotMessage(data.response);
         } catch (error) {
             console.error('Error:', error);
             typingIndicator.remove();
-            addErrorMessage("I apologize, but I'm having trouble processing your request. Please try again.");
+            addErrorMessage(error.message || "I apologize, but I'm having trouble processing your request. Please try again");
         } finally {
             isWaitingForResponse = false;
+            messageInput.focus();
         }
 
         // Scroll to bottom
