@@ -32,14 +32,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ message })
             });
 
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                console.error('Non-JSON response:', await response.text());
-                throw new Error('Invalid response format from server');
-            }
+            // Log the raw response
+            const rawResponse = await response.text();
+            console.log('Raw response:', rawResponse);
 
-            const data = await response.json();
-            console.log('Response data:', data);
+            // Try to parse as JSON
+            let data;
+            try {
+                data = JSON.parse(rawResponse);
+                console.log('Parsed JSON:', data);
+            } catch (error) {
+                console.error('Failed to parse response as JSON:', error);
+                throw new Error('Server returned invalid JSON');
+            }
 
             if (!response.ok) {
                 console.error('API Error:', data);

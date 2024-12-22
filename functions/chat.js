@@ -2,15 +2,22 @@ require('dotenv').config();
 const axios = require('axios');
 
 exports.handler = async function(event, context) {
+  console.log('Function invoked with event:', event);
+
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json'
   };
 
   // Handle preflight requests
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+    return { 
+      statusCode: 200, 
+      headers, 
+      body: JSON.stringify({ message: 'Preflight call successful' })
+    };
   }
 
   try {
@@ -18,6 +25,7 @@ exports.handler = async function(event, context) {
       throw new Error('Method not allowed');
     }
 
+    console.log('Request body:', event.body);
     const { message } = JSON.parse(event.body);
     if (!message) {
       throw new Error('Message is required');
@@ -64,6 +72,7 @@ User's concern: ${message}`
     });
 
     console.log('Received response from Gemini API');
+    console.log('Response data:', JSON.stringify(response.data));
     
     if (!response.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
       console.error('Invalid response structure:', JSON.stringify(response.data));
@@ -81,7 +90,6 @@ User's concern: ${message}`
   } catch (error) {
     console.error('Error details:', error);
     
-    // Return a more specific error message
     return {
       statusCode: error.response?.status || 500,
       headers,
